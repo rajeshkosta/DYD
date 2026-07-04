@@ -1,0 +1,72 @@
+services:
+
+  nginx:
+    image: nginx:alpine
+    container_name: dyd
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - frontend
+      - admin
+      - backend
+    networks:
+      - dyd-network
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: dyd-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: dyd
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: dyd123
+    volumes:
+      - ./dyd_data:/var/lib/postgresql/data
+    networks:
+      - dyd-network
+
+  backend:
+    build:
+      context: ./Application-Code/backend
+    container_name: dyd-backend
+    restart: unless-stopped
+    environment:
+       DATABASE_URL: ${DYD_DATABASE_URL}
+       JWT_SECRET: ${JWT_SECRET}
+       EMAIL_USER: ${EMAIL_USER}
+       EMAIL_PASS: ${EMAIL_PASS}
+    depends_on:
+      - postgres
+    networks:
+      - dyd-network
+
+  frontend:
+    build:
+      context: ./Application-Code/frontend
+    container_name: dyd-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - dyd-network
+
+  admin:
+    build:
+      context: ./Application-Code/admin
+    container_name: dyd-admin
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - dyd-network
+
+volumes:
+  dyd:
+
+networks:
+  dyd-network:
+    driver: bridge
