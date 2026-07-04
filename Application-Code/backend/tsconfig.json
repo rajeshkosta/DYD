@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./src",
+    "target": "ESNext",                               /* Use the latest ECMAScript features */
+    "module": "CommonJS",                               /* Use ES modules */
+    "moduleResolution": "node",                        /* Resolve modules like Node.js */
+    "esModuleInterop": true,                          /* Enable interop with CommonJS modules */
+    "strict": true,                                   /* Enable strict type checking */
+    "forceConsistentCasingInFileNames": true,          /* Ensure consistent casing of file names */
+    "skipLibCheck": true,                             /* Skip type checking for declaration files */
+    "resolveJsonModule": true,                        /* Allow importing .json files */
+    "outDir": "./dist",                               /* Specify output folder for compiled files */
+    "rootDir": "./src",                               /* Specify root folder for source files */
+    "allowSyntheticDefaultImports": true,              /* Allow synthetic default imports */
+    "paths": {
+      "*": ["*"]
+    }
+  },
+  "include": ["src", "types"],                                  /* Include source files in the src folder */
+  "exclude": ["node_modules", "dist"]                   /* Exclude node_modules and dist folder */
+}

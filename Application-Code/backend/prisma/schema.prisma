@@ -1,0 +1,130 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User management
+model User {
+  id         String     @id @default(uuid())
+  name       String
+  email      String?    @unique
+  number     String     @unique
+  created_at DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  address    Address[]
+  creation   Creation[]
+  order      Order[]
+}
+
+model Address {
+  id        String   @id @default(uuid())
+  userId    String
+  name      String?
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  house     String
+  street    String
+  city      String
+  state     String
+  country   String?
+  zipCode   String
+  number    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  order     Order[]
+}
+
+model PhoneVerification {
+  id        String   @id @default(uuid())
+  number    String
+  otp       String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+// image or video upload
+model TemporaryMedia {
+  id        String   @id @default(uuid())
+  // userId    String   @db.Uuid
+  fieldName String
+  url       String
+  timestamp DateTime @default(now())
+}
+
+// user creations 
+model Creation {
+  id     String  @id @default(uuid())
+  userId String
+  image  String?
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// admins
+model adminUser {
+  id         String   @id @default(uuid())
+  name       String
+  email      String   @unique
+  password   String
+  created_at DateTime @default(now())
+}
+
+// orders 
+
+model Order {
+  id            String @id @default(uuid())
+  orderId       String @unique
+  userId        String
+  addressId     String
+  price         Float
+  designImage   String?
+  logo          String
+  size          String
+  status        OrderStatus  @default(pending)
+  quantity      Int
+  modeOfPayment String
+  productName   String
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  address Address @relation(fields: [addressId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum OrderStatus {
+  pending
+  dispatched
+  delivered
+  cancelled
+}
+
+
+model products {
+  id String @id @default(uuid())
+  name String
+  price Float
+  size Json?
+  category String?
+  quantity Float
+  status Boolean @default(true)
+  images String[] @default([])
+  videos String[] @default([])
+}
+
+
+model page {
+  id String @id @default(uuid())
+  title String
+  content String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

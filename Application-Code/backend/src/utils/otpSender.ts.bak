@@ -1,0 +1,27 @@
+import twilio from 'twilio';
+
+// Twilio Credentials (Set these in your .env file)
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
+
+// Initialize Twilio client
+const client = twilio(accountSid, authToken);
+
+// Generate a 6-digit OTP
+export const generateOTP = (): string => Math.floor(100000 + Math.random() * 900000).toString();
+
+// Send OTP via SMS
+export const sendOTPSMS = async (phoneNumber: string, otp: string) => {
+    try {
+        await client.messages.create({
+            body: `Your verification code is ${otp}. It expires in 10 minutes.`,
+            from: twilioPhoneNumber,
+            to: phoneNumber,
+        });
+        console.log(`OTP sent to ${phoneNumber}`);
+    } catch (error) {
+        console.error(`Failed to send OTP: ${error}`);
+        throw new Error('Failed to send OTP. Please try again.');
+    }
+};

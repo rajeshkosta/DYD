@@ -1,0 +1,43 @@
+footer ul li a:hover {
+    text-decoration: underline;
+    color: blue !important;
+}
+
+footer ul li,
+footer ul li a {
+    font-size: 16px;
+}
+
+/* Default icon colors */
+.facebook-icon, .facebook-link {
+    transition: color 0.3s ease;
+}
+
+.instagram-icon, .instagram-link {
+    transition: color 0.3s ease;
+}
+
+.twitter-icon, .twitter-link {
+    transition: color 0.3s ease;
+}
+
+.linkedin-icon, .linkedin-link {
+    transition: color 0.3s ease;
+}
+
+/* Hover effects - Change icon and text color together */
+li:hover .facebook-icon, li:hover .facebook-link {
+    color: #1877F2;  /* Facebook Blue */
+}
+
+li:hover .instagram-icon, li:hover .instagram-link {
+    color: #E4405F;  /* Instagram Pink */
+}
+
+li:hover .twitter-icon, li:hover .twitter-link {
+    color: #1DA1F2;  /* Twitter Light Blue */
+}
+
+li:hover .linkedin-icon, li:hover .linkedin-link {
+    color: #0077B5;  /* LinkedIn Dark Blue */
+}

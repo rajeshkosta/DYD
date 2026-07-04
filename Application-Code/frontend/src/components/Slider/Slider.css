@@ -1,0 +1,31 @@
+/* .mySwiper .swiper-slide {
+  width: 300px;  
+} */
+
+
+.swiper-slide img {
+  width: 100%;
+}
+
+.swiper-container {
+  /* width: 80%;  */
+  margin: 0 auto;
+  /* Center the container horizontally */
+}
+
+@media screen and (max-width: 1284px) {
+
+  .screenShots-info {
+    width: 100%;
+  }
+}
+
+.swiper-slide img {
+  border-radius: 40px !important;
+}
+
+@media screen and (max-width: 768px) {
+  .swiper-slide img {
+    border-radius: 50px !important;
+  }
+}

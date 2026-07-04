@@ -1,0 +1,12 @@
+.ant-menu-item {
+    color: white !important;
+  }
+  
+  .ant-menu-item:hover {
+    color: #60A5FA !important;
+  }
+  
+  .ant-menu-item-selected {
+    background-color: #1E3A8A !important; /* Adjust the color if needed */
+  }
+  
