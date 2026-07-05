@@ -1,0 +1,36 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: prisma-migrate
+
+spec:
+  backoffLimit: 3
+
+  template:
+    spec:
+      restartPolicy: Never
+
+      containers:
+        - name: prisma-migrate
+
+          image: rajeshkosta/dyd-backend:latest
+          imagePullPolicy: Always
+
+          command:
+            - sh
+            - -c
+            - |
+              echo "Running Prisma Migration..."
+              npx prisma migrate deploy
+
+              echo "Running Prisma Seed..."
+              npx prisma db seed
+
+              echo "Completed"
+
+          envFrom:
+            - configMapRef:
+                name: config-map
+
+            - secretRef:
+                name: secret-map

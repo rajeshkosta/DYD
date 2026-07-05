@@ -1,0 +1,67 @@
+architecture: standalone
+
+auth:
+  postgresPassword: dyd@!@#
+  username: appuser
+  password: dyd@!@#
+  database: dyd
+
+primary:
+  persistence:
+    enabled: true
+    size: 5Gi
+
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+
+  nodeSelector:
+    workload: database
+
+#  tolerations:
+#    - key: dedicated
+#      operator: Equal
+#      value: database
+#      effect: NoSchedule
+
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: workload
+                operator: In
+                values:
+                  - database
+
+  podSecurityContext:
+    enabled: true
+    fsGroup: 1001
+
+  containerSecurityContext:
+    enabled: true
+    runAsUser: 1001
+    runAsNonRoot: true
+
+service:
+  type: ClusterIP
+
+networkPolicy:
+  enabled: true
+
+serviceAccount:
+  create: true
+
+volumePermissions:
+  enabled: true
+
+metrics:
+  enabled: true
+
+extraEnvVars:
+  - name: TZ
+    value: Asia/Kolkata

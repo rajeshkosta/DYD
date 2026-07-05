@@ -1,0 +1,208 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  labels:
+    app: backend
+
+spec:
+  replicas: 1
+
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+
+  selector:
+    matchLabels:
+      app: backend
+
+  template:
+    metadata:
+      labels:
+        app: backend
+
+    spec:
+      serviceAccountName: backend-sa
+
+#      imagePullSecrets:
+#        - name: nexus-secret
+
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 3000
+        fsGroup: 2000
+
+#      tolerations:
+#        - key: "dedicated"
+#          operator: "Equal"
+#          value: "application"
+#          effect: "NoSchedule"
+
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: workload
+                    operator: In
+                    values:
+                      - application
+
+
+      initContainers:
+        - name: wait-for-postgres
+          image: busybox:latest
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for PostgreSQL..."
+
+              until nc -z postgresql.database.svc.cluster.local 5432
+              do
+                sleep 5
+              done
+
+              echo "PostgreSQL Ready"
+
+
+      containers:
+        - name: backend
+          image: rajeshkosta/dyd-backend:latest
+          imagePullPolicy: Always
+
+          securityContext:
+            readOnlyRootFilesystem: false
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+          ports:
+            - containerPort: 5000
+
+          envFrom:
+            - configMapRef:
+                name: config-map
+            - secretRef:
+                name: secret-map
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+          startupProbe:
+            httpGet:
+              path: /
+              port: 5000
+            failureThreshold: 30
+            periodSeconds: 10
+
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 5000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+
+          volumeMounts:
+            - name: app-storage
+              mountPath: /data
+
+      volumes:
+        - name: app-storage
+          emptyDir: {}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-svc
+spec:
+  selector:
+    app: backend
+  ports:
+    - port: 80
+      targetPort: 5000
+
+---
+## HPA(horizontal pod scalling)
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: backend-hpa
+
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: backend
+
+  minReplicas: 3
+  maxReplicas: 20
+
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 60
+
+    scaleDown:
+      stabilizationWindowSeconds: 300
+
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-map
+data:
+  NODE_ENV: "production"
+  PORT: "5000"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: secret-map
+type: Opaque
+stringData:
+  DATABASE_URL: "postgresql://postgres:dyd@!@#@postgresql.database.svc.cluster.local:5432/dyd?schema=public"
+  JWT_SECRET: "super-secret-jwt"
